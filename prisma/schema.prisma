@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EventStatus {
+  draft
+  live
+  closed
+}
+
+enum FaceProcessingStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Event {
+  id             String      @id @default(cuid())
+  name           String
+  eventDate      DateTime
+  eventType      String
+  slug           String      @unique
+  pinCodeHash    String?
+  coverImageKey  String?
+  status         EventStatus @default(draft)
+  faceNamespace  String      @unique
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  photos         Photo[]
+  faces          Face[]
+  guestSearches  GuestSearch[]
+}
+
+model Photo {
+  id          String   @id @default(cuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  originalKey String
+  previewKey  String
+  fileName    String
+  mimeType    String
+  width       Int?
+  height      Int?
+  createdAt   DateTime @default(now())
+  faces       Face[]
+
+  @@index([eventId])
+}
+
+model Face {
+  id               String               @id @default(cuid())
+  eventId          String
+  event            Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  photoId          String
+  photo            Photo                @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  comprefaceImageId String?
+  comprefaceSubject String?
+  boundingBox       Json?
+  confidence        Float?
+  processingStatus  FaceProcessingStatus @default(pending)
+  failureReason     String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@index([eventId])
+  @@index([photoId])
+  @@index([comprefaceImageId])
+  @@index([comprefaceSubject])
+}
+
+model GuestSearch {
+  id              String   @id @default(cuid())
+  eventId          String
+  event            Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  selfieKey       String?
+  consentAccepted Boolean
+  similarity      Float    @default(85)
+  matchedFaceIds  String[]
+  matchedPhotoIds String[]
+  selfieDeleted   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([eventId])
+}

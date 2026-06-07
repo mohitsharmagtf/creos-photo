@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: creo-photo-finder
+    env: node
+    plan: starter
+    buildCommand: npm ci && npm run build && npm run prisma:deploy
+    startCommand: npm run start
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        sync: false
+      - key: AWS_S3_BUCKET
+        sync: false
+      - key: COMPREFACE_BASE_URL
+        sync: false
+      - key: COMPREFACE_RECOGNITION_API_KEY
+        sync: false
+      - key: COMPREFACE_DETECTION_API_KEY
+        sync: false
+      - key: APP_BASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: DELETE_SELFIES_AFTER_SEARCH
+        value: "true"

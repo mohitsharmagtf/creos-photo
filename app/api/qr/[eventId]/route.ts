@@ -14,5 +14,5 @@ export async function GET(request: Request, { params }: { params: Promise<{ even
   if (url.searchParams.get("download") === "1") {
     headers["Content-Disposition"] = `attachment; filename="${event.slug}-qr.png"`;
   }
-  return new NextResponse(png, { headers });
+  return new NextResponse(Uint8Array.from(png), { headers });
 }
